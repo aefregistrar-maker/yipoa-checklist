@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fil">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>YIPOA Daily Task Checklist</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; font-size: 15px; }
+
+.topbar { background: #0F6E56; padding: 14px 16px; }
+.topbar h1 { font-size: 17px; font-weight: 700; color: white; }
+.topbar p { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+.container { padding: 14px 12px 40px; max-width: 600px; margin: 0 auto; }
+
+.card { background: white; border-radius: 12px; border: 1px solid #e5e5e0; margin-bottom: 12px; overflow: hidden; }
+.card-head { background: #f7f7f4; padding: 10px 14px; border-bottom: 1px solid #eee; }
+.card-head h2 { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+.card-body { padding: 14px; }
+
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+.field input[type=text], .field input[type=date] {
+  width: 100%; font-size: 15px; padding: 10px 12px;
+  border: 1px solid #ddd; border-radius: 8px;
+  background: white; color: #1a1a1a; -webkit-appearance: none;
+}
+.field input:focus { outline: none; border-color: #1D9E75; }
+
+.prog-bar { height: 6px; background: #e5ede7; border-radius: 3px; margin: 0 14px 8px; }
+.prog-fill { height: 100%; background: #1D9E75; border-radius: 3px; width: 0%; transition: width 0.3s; }
+.prog-text { font-size: 12px; color: #888; padding: 0 14px 10px; }
+
+.task-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #f2f2ef; }
+.task-item:last-child { border-bottom: none; }
+.task-num { font-size: 11px; color: #bbb; width: 18px; flex-shrink: 0; padding-top: 3px; text-align: right; }
+.task-info { flex: 1; min-width: 0; }
+.task-lugar { font-size: 11px; color: #aaa; margin-bottom: 1px; }
+.task-gawain { font-size: 14px; color: #1a1a1a; font-weight: 500; line-height: 1.3; }
+.task-checks { display: flex; flex-direction: column; gap: 4px; align-items: center; flex-shrink: 0; }
+.check-label { display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+.check-label span { font-size: 9px; color: #bbb; font-weight: 700; text-transform: uppercase; }
+.check-label input[type=checkbox] { width: 22px; height: 22px; accent-color: #1D9E75; cursor: pointer; }
+.task-note { width: 100%; font-size: 13px; padding: 6px 10px; border: 1px solid #e0e0dc; border-radius: 6px; margin-top: 6px; background: #fafaf8; color: #333; }
+.task-note:focus { outline: none; border-color: #1D9E75; }
+.task-item.done .task-gawain { text-decoration: line-through; color: #bbb; }
+
+textarea { width: 100%; font-size: 14px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; background: white; color: #1a1a1a; resize: vertical; min-height: 70px; font-family: inherit; line-height: 1.5; }
+textarea:focus { outline: none; border-color: #1D9E75; }
+
+.submit-btn { width: 100%; background: #1D9E75; color: white; border: none; border-radius: 10px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; letter-spacing: 0.01em; }
+.submit-btn:active { background: #0F6E56; }
+
+.toast { position: fixed; bottom: 20px; left: 12px; right: 12px; background: #c0392b; color: white; padding: 13px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; text-align: center; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>YIPOA Daily Task Checklist</h1>
+  <p>I-fill out at i-submit araw-araw</p>
+</div>
+
+<div class="container">
+
+  <!-- SCHOLAR INFO -->
+  <div class="card">
+    <div class="card-head"><h2>Impormasyon ng Scholar</h2></div>
+    <div class="card-body">
+      <div class="field">
+        <label>Petsa</label>
+        <input type="date" id="petsa">
+      </div>
+      <div class="field">
+        <label>Pangalan ng Scholar</label>
+        <input type="text" id="scholar" placeholder="Buong pangalan">
+      </div>
+      <div class="field">
+        <label>Leader of the Day</label>
+        <input type="text" id="leader" placeholder="Pangalan ng leader ngayon">
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="card">
+    <div class="card-head"><h2>Mga Gawain sa Araw na Ito</h2></div>
+    <div class="prog-bar"><div class="prog-fill" id="prog"></div></div>
+    <div class="prog-text" id="prog-txt">0 sa 19 na gawain ang natapos</div>
+
+    <div class="task-item" id="ti1">
+      <div class="task-num">1</div>
+      <div class="task-info">
+        <div class="task-lugar">Accommodation</div>
+        <div class="task-gawain">Linisin ang paligid</div>
+        <input class="task-note" type="text" id="note1" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am1" onchange="tick(1)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm1" onchange="tick(1)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti2">
+      <div class="task-num">2</div>
+      <div class="task-info">
+        <div class="task-lugar">Kusina</div>
+        <div class="task-gawain">Linisin ang area</div>
+        <input class="task-note" type="text" id="note2" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am2" onchange="tick(2)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm2" onchange="tick(2)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti3">
+      <div class="task-num">3</div>
+      <div class="task-info">
+        <div class="task-lugar">Training Hall</div>
+        <div class="task-gawain">Linisin ang area</div>
+        <input class="task-note" type="text" id="note3" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am3" onchange="tick(3)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm3" onchange="tick(3)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti4">
+      <div class="task-num">4</div>
+      <div class="task-info">
+        <div class="task-lugar">Tool Room</div>
+        <div class="task-gawain">Linisin at ayusin</div>
+        <input class="task-note" type="text" id="note4" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am4" onchange="tick(4)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm4" onchange="tick(4)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti5">
+      <div class="task-num">5</div>
+      <div class="task-info">
+        <div class="task-lugar">Accommodation Plants</div>
+        <div class="task-gawain">Diligan lahat ng potted plants</div>
+        <input class="task-note" type="text" id="note5" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am5" onchange="tick(5)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm5" onchange="tick(5)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti6">
+      <div class="task-num">6</div>
+      <div class="task-info">
+        <div class="task-lugar">Nursery</div>
+        <div class="task-gawain">Diligan seedlings</div>
+        <input class="task-note" type="text" id="note6" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am6" onchange="tick(6)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm6" onchange="tick(6)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti7">
+      <div class="task-num">7</div>
+      <div class="task-info">
+        <div class="task-lugar">Vegetable Garden</div>
+        <div class="task-gawain">Linisin, magbunot ng damo at diligan</div>
+        <input class="task-note" type="text" id="note7" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am7" onchange="tick(7)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm7" onchange="tick(7)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti8">
+      <div class="task-num">8</div>
+      <div class="task-info">
+        <div class="task-lugar">Mulberry Area</div>
+        <div class="task-gawain">Linisin, magbunot ng damo at diligan</div>
+        <input class="task-note" type="text" id="note8" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am8" onchange="tick(8)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm8" onchange="tick(8)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti9">
+      <div class="task-num">9</div>
+      <div class="task-info">
+        <div class="task-lugar">Chicken Area</div>
+        <div class="task-gawain">Linisin</div>
+        <input class="task-note" type="text" id="note9" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am9" onchange="tick(9)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm9" onchange="tick(9)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti10">
+      <div class="task-num">10</div>
+      <div class="task-info">
+        <div class="task-lugar">Manok</div>
+        <div class="task-gawain">Pakainin</div>
+        <input class="task-note" type="text" id="note10" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am10" onchange="tick(10)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm10" onchange="tick(10)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti11">
+      <div class="task-num">11</div>
+      <div class="task-info">
+        <div class="task-lugar">Goat Area</div>
+        <div class="task-gawain">Linisin</div>
+        <input class="task-note" type="text" id="note11" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am11" onchange="tick(11)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm11" onchange="tick(11)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti12">
+      <div class="task-num">12</div>
+      <div class="task-info">
+        <div class="task-lugar">Kambing</div>
+        <div class="task-gawain">Pakainin / Ipastol</div>
+        <input class="task-note" type="text" id="note12" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am12" onchange="tick(12)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm12" onchange="tick(12)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti13">
+      <div class="task-num">13</div>
+      <div class="task-info">
+        <div class="task-lugar">Hog Area</div>
+        <div class="task-gawain">Linisin</div>
+        <input class="task-note" type="text" id="note13" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am13" onchange="tick(13)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm13" onchange="tick(13)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti14">
+      <div class="task-num">14</div>
+      <div class="task-info">
+        <div class="task-lugar">Baboy</div>
+        <div class="task-gawain">Pakainin</div>
+        <input class="task-note" type="text" id="note14" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am14" onchange="tick(14)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm14" onchange="tick(14)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti15">
+      <div class="task-num">15</div>
+      <div class="task-info">
+        <div class="task-lugar">Compost Area</div>
+        <div class="task-gawain">Diligan at linisin</div>
+        <input class="task-note" type="text" id="note15" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am15" onchange="tick(15)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm15" onchange="tick(15)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti16">
+      <div class="task-num">16</div>
+      <div class="task-info">
+        <div class="task-lugar">Composting</div>
+        <div class="task-gawain">Mag-shred</div>
+        <input class="task-note" type="text" id="note16" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am16" onchange="tick(16)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm16" onchange="tick(16)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti17">
+      <div class="task-num">17</div>
+      <div class="task-info">
+        <div class="task-lugar">Composting</div>
+        <div class="task-gawain">Mag-sieve / Magbag</div>
+        <input class="task-note" type="text" id="note17" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am17" onchange="tick(17)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm17" onchange="tick(17)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti18">
+      <div class="task-num">18</div>
+      <div class="task-info">
+        <div class="task-lugar">Composting</div>
+        <div class="task-gawain">Load / Unload</div>
+        <input class="task-note" type="text" id="note18" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am18" onchange="tick(18)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm18" onchange="tick(18)"></label>
+      </div>
+    </div>
+
+    <div class="task-item" id="ti19">
+      <div class="task-num">19</div>
+      <div class="task-info">
+        <div class="task-lugar">Composting</div>
+        <div class="task-gawain">Maglipat</div>
+        <input class="task-note" type="text" id="note19" placeholder="Notes...">
+      </div>
+      <div class="task-checks">
+        <label class="check-label"><span>AM</span><input type="checkbox" id="am19" onchange="tick(19)"></label>
+        <label class="check-label"><span>PM</span><input type="checkbox" id="pm19" onchange="tick(19)"></label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ADDITIONAL INFO -->
+  <div class="card">
+    <div class="card-head"><h2>Karagdagang Impormasyon</h2></div>
+    <div class="card-body">
+      <div class="field">
+        <label>Ibang gawain na hindi nabanggit sa itaas</label>
+        <textarea id="other-tasks" placeholder="Halimbawa: nag-harvest ng kalamansi..."></textarea>
+      </div>
+      <div class="field">
+        <label>Challenges — Bakit hindi natapos ang ilang tasks?</label>
+        <textarea id="challenges" placeholder="Halimbawa: malakas na ulan, kulang ang tools..."></textarea>
+      </div>
+      <div class="field">
+        <label>Suggestions / Recommendations</label>
+        <textarea id="suggestions" placeholder="Mga mungkahi para mapabuti ang trabaho..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="submitForm()">I-submit ang Report</button>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Hidden iframe to catch the response without leaving the page -->
+<iframe name="hidden-submit" id="hidden-submit" style="display:none"></iframe>
+
+<!-- Hidden form that does the actual submission -->
+<form id="submit-form" method="GET" target="hidden-submit" style="display:none">
+  <input type="hidden" name="petsa" id="f-petsa">
+  <input type="hidden" name="scholar" id="f-scholar">
+  <input type="hidden" name="leader" id="f-leader">
+  <input type="hidden" name="submittedAt" id="f-submittedAt">
+  <input type="hidden" name="otherTasks" id="f-otherTasks">
+  <input type="hidden" name="challenges" id="f-challenges">
+  <input type="hidden" name="suggestions" id="f-suggestions">
+  <!-- Task fields -->
+  <input type="hidden" name="t1_lugar" value="Accommodation"><input type="hidden" name="t1_gawain" value="Linisin ang paligid"><input type="hidden" id="f-am1" name="t1_am"><input type="hidden" id="f-pm1" name="t1_pm"><input type="hidden" id="f-note1" name="t1_note">
+  <input type="hidden" name="t2_lugar" value="Kusina"><input type="hidden" name="t2_gawain" value="Linisin ang area"><input type="hidden" id="f-am2" name="t2_am"><input type="hidden" id="f-pm2" name="t2_pm"><input type="hidden" id="f-note2" name="t2_note">
+  <input type="hidden" name="t3_lugar" value="Training Hall"><input type="hidden" name="t3_gawain" value="Linisin ang area"><input type="hidden" id="f-am3" name="t3_am"><input type="hidden" id="f-pm3" name="t3_pm"><input type="hidden" id="f-note3" name="t3_note">
+  <input type="hidden" name="t4_lugar" value="Tool Room"><input type="hidden" name="t4_gawain" value="Linisin at ayusin"><input type="hidden" id="f-am4" name="t4_am"><input type="hidden" id="f-pm4" name="t4_pm"><input type="hidden" id="f-note4" name="t4_note">
+  <input type="hidden" name="t5_lugar" value="Accommodation Plants"><input type="hidden" name="t5_gawain" value="Diligan lahat ng potted plants"><input type="hidden" id="f-am5" name="t5_am"><input type="hidden" id="f-pm5" name="t5_pm"><input type="hidden" id="f-note5" name="t5_note">
+  <input type="hidden" name="t6_lugar" value="Nursery"><input type="hidden" name="t6_gawain" value="Diligan seedlings"><input type="hidden" id="f-am6" name="t6_am"><input type="hidden" id="f-pm6" name="t6_pm"><input type="hidden" id="f-note6" name="t6_note">
+  <input type="hidden" name="t7_lugar" value="Vegetable Garden"><input type="hidden" name="t7_gawain" value="Linisin, magbunot ng damo at diligan"><input type="hidden" id="f-am7" name="t7_am"><input type="hidden" id="f-pm7" name="t7_pm"><input type="hidden" id="f-note7" name="t7_note">
+  <input type="hidden" name="t8_lugar" value="Mulberry Area"><input type="hidden" name="t8_gawain" value="Linisin, magbunot ng damo at diligan"><input type="hidden" id="f-am8" name="t8_am"><input type="hidden" id="f-pm8" name="t8_pm"><input type="hidden" id="f-note8" name="t8_note">
+  <input type="hidden" name="t9_lugar" value="Chicken Area"><input type="hidden" name="t9_gawain" value="Linisin"><input type="hidden" id="f-am9" name="t9_am"><input type="hidden" id="f-pm9" name="t9_pm"><input type="hidden" id="f-note9" name="t9_note">
+  <input type="hidden" name="t10_lugar" value="Manok"><input type="hidden" name="t10_gawain" value="Pakainin"><input type="hidden" id="f-am10" name="t10_am"><input type="hidden" id="f-pm10" name="t10_pm"><input type="hidden" id="f-note10" name="t10_note">
+  <input type="hidden" name="t11_lugar" value="Goat Area"><input type="hidden" name="t11_gawain" value="Linisin"><input type="hidden" id="f-am11" name="t11_am"><input type="hidden" id="f-pm11" name="t11_pm"><input type="hidden" id="f-note11" name="t11_note">
+  <input type="hidden" name="t12_lugar" value="Kambing"><input type="hidden" name="t12_gawain" value="Pakainin / Ipastol"><input type="hidden" id="f-am12" name="t12_am"><input type="hidden" id="f-pm12" name="t12_pm"><input type="hidden" id="f-note12" name="t12_note">
+  <input type="hidden" name="t13_lugar" value="Hog Area"><input type="hidden" name="t13_gawain" value="Linisin"><input type="hidden" id="f-am13" name="t13_am"><input type="hidden" id="f-pm13" name="t13_pm"><input type="hidden" id="f-note13" name="t13_note">
+  <input type="hidden" name="t14_lugar" value="Baboy"><input type="hidden" name="t14_gawain" value="Pakainin"><input type="hidden" id="f-am14" name="t14_am"><input type="hidden" id="f-pm14" name="t14_pm"><input type="hidden" id="f-note14" name="t14_note">
+  <input type="hidden" name="t15_lugar" value="Compost Area"><input type="hidden" name="t15_gawain" value="Diligan at linisin"><input type="hidden" id="f-am15" name="t15_am"><input type="hidden" id="f-pm15" name="t15_pm"><input type="hidden" id="f-note15" name="t15_note">
+  <input type="hidden" name="t16_lugar" value="Composting"><input type="hidden" name="t16_gawain" value="Mag-shred"><input type="hidden" id="f-am16" name="t16_am"><input type="hidden" id="f-pm16" name="t16_pm"><input type="hidden" id="f-note16" name="t16_note">
+  <input type="hidden" name="t17_lugar" value="Composting"><input type="hidden" name="t17_gawain" value="Mag-sieve / Magbag"><input type="hidden" id="f-am17" name="t17_am"><input type="hidden" id="f-pm17" name="t17_pm"><input type="hidden" id="f-note17" name="t17_note">
+  <input type="hidden" name="t18_lugar" value="Composting"><input type="hidden" name="t18_gawain" value="Load / Unload"><input type="hidden" id="f-am18" name="t18_am"><input type="hidden" id="f-pm18" name="t18_pm"><input type="hidden" id="f-note18" name="t18_note">
+  <input type="hidden" name="t19_lugar" value="Composting"><input type="hidden" name="t19_gawain" value="Maglipat"><input type="hidden" id="f-am19" name="t19_am"><input type="hidden" id="f-pm19" name="t19_pm"><input type="hidden" id="f-note19" name="t19_note">
+</form>
+
+<script>
+// ============================================================
+// YOUR GOOGLE APPS SCRIPT URL (already set)
+// ============================================================
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbzV5_0_cF0fv6u6RhBPA2jh4xNpbkn6KkRzqLJ83CUuV0tWoEpKNZhwU2KIysq0-gUC/exec';
+// ============================================================
+
+var TOTAL = 19;
+
+function tick(n) {
+  var am = document.getElementById('am'+n).checked;
+  var pm = document.getElementById('pm'+n).checked;
+  document.getElementById('ti'+n).classList.toggle('done', am && pm);
+  updateProgress();
+}
+
+function updateProgress() {
+  var done = 0;
+  for (var i = 1; i <= TOTAL; i++) {
+    if (document.getElementById('am'+i).checked || document.getElementById('pm'+i).checked) done++;
+  }
+  var pct = Math.round((done / TOTAL) * 100);
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('prog-txt').textContent = done + ' sa ' + TOTAL + ' na gawain ang natapos (' + pct + '%)';
+}
+
+function submitForm() {
+  var petsa = document.getElementById('petsa').value;
+  var scholar = document.getElementById('scholar').value.trim();
+  if (!petsa)   { showToast('Mangyaring lagyan ng Petsa.'); return; }
+  if (!scholar) { showToast('Mangyaring lagyan ng Pangalan ng Scholar.'); return; }
+
+  // Fill hidden form fields
+  document.getElementById('f-petsa').value       = petsa;
+  document.getElementById('f-scholar').value     = scholar;
+  document.getElementById('f-leader').value      = document.getElementById('leader').value.trim();
+  document.getElementById('f-otherTasks').value  = document.getElementById('other-tasks').value.trim();
+  document.getElementById('f-challenges').value  = document.getElementById('challenges').value.trim();
+  document.getElementById('f-suggestions').value = document.getElementById('suggestions').value.trim();
+  document.getElementById('f-submittedAt').value = new Date().toLocaleString('en-PH', {timeZone:'Asia/Manila'});
+
+  for (var i = 1; i <= TOTAL; i++) {
+    document.getElementById('f-am'+i).value   = document.getElementById('am'+i).checked ? 'DONE' : '';
+    document.getElementById('f-pm'+i).value   = document.getElementById('pm'+i).checked ? 'DONE' : '';
+    document.getElementById('f-note'+i).value = document.getElementById('note'+i).value.trim();
+  }
+
+  // Set the form action and submit
+  var form = document.getElementById('submit-form');
+  form.action = SHEET_URL;
+  form.submit();
+
+  // Show success after short delay
+  setTimeout(function() {
+    showSuccess();
+  }, 2000);
+}
+
+function showSuccess() {
+  document.querySelector('.container').innerHTML =
+    '<div style="text-align:center;padding:60px 20px">' +
+    '<div style="font-size:64px;margin-bottom:16px">✅</div>' +
+    '<h2 style="font-size:22px;font-weight:700;color:#0F6E56;margin-bottom:8px">Na-submit na!</h2>' +
+    '<p style="font-size:14px;color:#888;line-height:1.7;margin-bottom:28px">Nai-save na ang inyong daily checklist<br>sa Google Sheet ng admin.<br><br>Salamat sa inyong ulat ngayon.</p>' +
+    '<button onclick="location.reload()" style="background:#1D9E75;color:white;border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer">Mag-submit ng bagong report</button>' +
+    '</div>';
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+// Set today's date
+document.getElementById('petsa').value = new Date().toLocaleDateString('en-CA', {timeZone:'Asia/Manila'});
+</script>
+</body>
+</html>
